@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Scroll — a webtoon reader</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap');
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: #0A0A0C;
+    color: #EDE9E1;
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .display {
+    font-family: 'Anton', 'Inter', sans-serif;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  /* ---- Landing / status ---- */
+  .landing {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 24px;
+    text-align: center;
+  }
+  .wordmark {
+    font-size: clamp(56px, 14vw, 112px);
+    line-height: 0.85;
+    color: #EDE9E1;
+  }
+  .wordmark span { color: #FF2D6E; }
+  .rule {
+    width: 64px; height: 3px;
+    background: #FF2D6E;
+    margin: 22px 0 18px;
+    border-radius: 2px;
+  }
+  .tagline {
+    color: #8B8890;
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .status-text { color: #6B6870; font-size: 13px; margin-top: 18px; max-width: 380px; line-height: 1.6; }
+  .status-text.error { color: #FF2D6E; }
+
+  /* ---- Top bar ---- */
+  .topbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 14px;
+    background: rgba(10,10,12,0.88);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid #1C1B1F;
+    z-index: 40;
+    transform: translateY(0);
+    transition: transform 0.25s ease;
+  }
+  .topbar.hidden { transform: translateY(-100%); }
+  .icon-btn {
+    background: none; border: none; color: #EDE9E1;
+    padding: 8px; border-radius: 8px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .icon-btn:hover { background: #17161A; }
+  .topbar-title {
+    font-size: 13px; font-weight: 600; color: #B9B5BE;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60vw;
+  }
+  .progress-hairline {
+    position: fixed; top: 56px; left: 0; height: 2px;
+    background: #FF2D6E; z-index: 41; transition: width 0.1s linear; width: 0%;
+  }
+
+  /* ---- drawer ---- */
+  .scrim {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+    z-index: 50; opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
+  }
+  .scrim.open { opacity: 1; pointer-events: auto; }
+  .drawer {
+    position: fixed; top: 0; right: 0; height: 100%;
+    width: min(320px, 84vw);
+    background: #0F0F12; border-left: 1px solid #1C1B1F;
+    z-index: 51; transform: translateX(100%); transition: transform 0.25s ease;
+    display: flex; flex-direction: column;
+  }
+  .drawer.open { transform: translateX(0); }
+  .drawer-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 16px; border-bottom: 1px solid #1C1B1F;
+  }
+  .drawer-head h2 {
+    font-family: 'Anton', sans-serif; font-weight: 400; font-size: 20px;
+    letter-spacing: 0.02em; text-transform: uppercase; margin: 0;
+  }
+  .drawer-list { overflow-y: auto; flex: 1; padding: 8px; }
+  .chapter-item {
+    width: 100%; text-align: left; background: none; border: none;
+    color: #B9B5BE; padding: 12px 12px; border-radius: 8px;
+    font-size: 14px; font-weight: 500; cursor: pointer;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .chapter-item:hover { background: #17161A; }
+  .chapter-item.active { color: #FF2D6E; background: #17161A; }
+  .chapter-item .dot { width: 6px; height: 6px; border-radius: 50%; background: #2C2A2F; flex-shrink: 0; }
+  .chapter-item.active .dot { background: #FF2D6E; }
+  .chapter-count { margin-left: auto; color: #55525A; font-size: 11px; }
+
+  /* ---- reading column ---- */
+  .reader { max-width: 720px; margin: 0 auto; padding-top: 56px; display: none; }
+  .chapter-card {
+    padding: 84px 24px; text-align: center;
+    border-top: 1px solid #1C1B1F; border-bottom: 1px solid #1C1B1F;
+  }
+  .chapter-card:first-child { border-top: none; }
+  .chapter-card .eyebrow {
+    color: #55525A; font-size: 12px; letter-spacing: 0.12em;
+    text-transform: uppercase; margin-bottom: 10px;
+  }
+  .chapter-card h3 {
+    font-family: 'Anton', sans-serif; font-weight: 400;
+    font-size: clamp(28px, 6vw, 42px); letter-spacing: 0.01em;
+    text-transform: uppercase; margin: 0; color: #EDE9E1;
+  }
+  .chapter-card .rule-sm { width: 40px; height: 2px; background: #FF2D6E; margin: 18px auto 0; border-radius: 2px; }
+
+  .panel-wrap img {
+    display: block; width: 100%; height: auto;
+    background: #131316; /* shows while the browser decodes */
+  }
+
+  .end-card {
+    padding: 100px 24px 140px; text-align: center;
+    color: #55525A; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase;
+  }
+
+  /* ---- side thread ---- */
+  .thread-rail {
+    position: fixed; right: 18px; top: 50%; transform: translateY(-50%);
+    height: min(60vh, 480px); width: 2px; background: #1C1B1F; z-index: 30; border-radius: 2px;
+  }
+  .thread-fill { position: absolute; top: 0; left: 0; width: 100%; background: #FF2D6E; border-radius: 2px; height: 0%; }
+  .thread-tick {
+    position: absolute; left: 50%; transform: translate(-50%, -50%);
+    width: 9px; height: 9px; border-radius: 50%;
+    background: #0A0A0C; border: 2px solid #3A373E; cursor: pointer;
+  }
+  .thread-tick.active { border-color: #FF2D6E; background: #FF2D6E; }
+  @media (max-width: 860px) { .thread-rail { display: none; } }
+
+  .top-fab {
+    position: fixed; bottom: 22px; right: 22px;
+    background: #131316; border: 1px solid #232226; color: #EDE9E1;
+    width: 44px; height: 44px; border-radius: 50%;
+    display: none; align-items: center; justify-content: center; cursor: pointer;
+    z-index: 35; opacity: 0.9;
+  }
+  .top-fab:hover { border-color: #FF2D6E; }
+  .top-fab svg, .icon-btn svg { width: 20px; height: 20px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .topbar, .drawer, .scrim, .progress-hairline { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="landing" id="landing">
+    <h1 class="wordmark display">SCROLL<span>.</span></h1>
+    <div class="rule"></div>
+    <p class="tagline">a webtoon reader</p>
+    <p class="status-text" id="statusText">Loading manifest.json…</p>
+  </div>
+
+  <div class="topbar hidden" id="topbar">
+    <button class="icon-btn" id="menuBtn" aria-label="Open chapter list">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+    </button>
+    <span class="topbar-title" id="topbarTitle"></span>
+    <button class="icon-btn" id="topBtnBar" aria-label="Scroll to top">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 15l-6-6-6 6"/></svg>
+    </button>
+  </div>
+  <div class="progress-hairline" id="hairline"></div>
+
+  <div class="scrim" id="scrim"></div>
+  <div class="drawer" id="drawer">
+    <div class="drawer-head">
+      <h2>Chapters</h2>
+      <button class="icon-btn" id="closeDrawerBtn" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="drawer-list" id="drawerList"></div>
+  </div>
+
+  <div class="thread-rail" id="threadRail" style="display:none;">
+    <div class="thread-fill" id="threadFill"></div>
+  </div>
+
+  <div class="reader" id="reader"></div>
+
+  <button class="top-fab" id="topFab" aria-label="Back to top">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 15l-6-6-6 6"/></svg>
+  </button>
+
+<script>
+(function () {
+  "use strict";
+
+  var els = {
+    landing: document.getElementById("landing"),
+    statusText: document.getElementById("statusText"),
+    topbar: document.getElementById("topbar"),
+    topbarTitle: document.getElementById("topbarTitle"),
+    hairline: document.getElementById("hairline"),
+    drawer: document.getElementById("drawer"),
+    drawerList: document.getElementById("drawerList"),
+    scrim: document.getElementById("scrim"),
+    reader: document.getElementById("reader"),
+    threadRail: document.getElementById("threadRail"),
+    threadFill: document.getElementById("threadFill"),
+    topFab: document.getElementById("topFab"),
+    menuBtn: document.getElementById("menuBtn"),
+    closeDrawerBtn: document.getElementById("closeDrawerBtn"),
+    topBtnBar: document.getElementById("topBtnBar"),
+  };
+
+  var chapters = [];
+  var chapterEls = [];
+  var activeChapter = 0;
+  var lastScrollY = 0;
+
+  function encodePath(p) {
+    return p.split("/").map(encodeURIComponent).join("/");
+  }
+
+  function openDrawer() { els.drawer.classList.add("open"); els.scrim.classList.add("open"); }
+  function closeDrawer() { els.drawer.classList.remove("open"); els.scrim.classList.remove("open"); }
+  function scrollToTop() { window.scrollTo({ top: 0, behavior: "smooth" }); }
+  function scrollToChapter(idx) {
+    var node = chapterEls[idx];
+    if (node) node.scrollIntoView({ behavior: "smooth", block: "start" });
+    closeDrawer();
+  }
+
+  function buildDrawer() {
+    els.drawerList.innerHTML = "";
+    chapters.forEach(function (c, idx) {
+      var btn = document.createElement("button");
+      btn.className = "chapter-item";
+      btn.dataset.idx = idx;
+      btn.innerHTML =
+        '<span class="dot"></span>' +
+        '<span class="ch-name"></span>' +
+        '<span class="chapter-count">' + c.pages.length + "</span>";
+      btn.querySelector(".ch-name").textContent = c.name;
+      btn.addEventListener("click", function () { scrollToChapter(idx); });
+      els.drawerList.appendChild(btn);
+    });
+  }
+
+  function updateActiveChapterUI() {
+    var items = els.drawerList.querySelectorAll(".chapter-item");
+    items.forEach(function (item, idx) {
+      item.classList.toggle("active", idx === activeChapter);
+    });
+    if (els.threadRail) {
+      var ticks = els.threadRail.querySelectorAll(".thread-tick");
+      ticks.forEach(function (t, idx) {
+        t.classList.toggle("active", idx === activeChapter);
+      });
+    }
+    els.topbarTitle.textContent = chapters[activeChapter] ? chapters[activeChapter].name : "";
+  }
+
+  function buildThreadRail() {
+    els.threadRail.innerHTML = "";
+    els.threadRail.appendChild(els.threadFill);
+    chapters.forEach(function (c, idx) {
+      var tick = document.createElement("div");
+      tick.className = "thread-tick";
+      tick.title = c.name;
+      tick.style.top = (chapters.length > 1 ? (idx / (chapters.length - 1)) * 100 : 0) + "%";
+      tick.addEventListener("click", function () { scrollToChapter(idx); });
+      els.threadRail.appendChild(tick);
+    });
+    els.threadRail.style.display = "";
+  }
+
+  function buildReader(baseDir) {
+    var frag = document.createDocumentFragment();
+
+    chapters.forEach(function (c, idx) {
+      var wrap = document.createElement("div");
+
+      var card = document.createElement("div");
+      card.className = "chapter-card";
+      var eyebrow = document.createElement("div");
+      eyebrow.className = "eyebrow";
+      eyebrow.textContent = "Chapter " + (idx + 1) + " of " + chapters.length;
+      var h3 = document.createElement("h3");
+      h3.textContent = c.name;
+      var ruleSm = document.createElement("div");
+      ruleSm.className = "rule-sm";
+      card.appendChild(eyebrow);
+      card.appendChild(h3);
+      card.appendChild(ruleSm);
+      wrap.appendChild(card);
+
+      c.pages.forEach(function (p) {
+        var panel = document.createElement("div");
+        panel.className = "panel-wrap";
+        var img = document.createElement("img");
+        img.src = baseDir + encodePath(p.file);
+        img.loading = "lazy";
+        img.decoding = "async";
+        img.alt = "";
+        img.width = p.w;
+        img.height = p.h;
+        panel.appendChild(img);
+        wrap.appendChild(panel);
+      });
+
+      frag.appendChild(wrap);
+      chapterEls.push(wrap);
+    });
+
+    var endCard = document.createElement("div");
+    endCard.className = "end-card";
+    var total = chapters.reduce(function (s, c) { return s + c.pages.length; }, 0);
+    endCard.textContent = "— end of series · " + total + " pages —";
+    frag.appendChild(endCard);
+
+    els.reader.appendChild(frag);
+  }
+
+  function onScrollFrame() {
+    var doc = document.documentElement;
+    var scrollTop = window.scrollY;
+    var max = doc.scrollHeight - doc.clientHeight;
+    var pct = max > 0 ? Math.min(100, (scrollTop / max) * 100) : 0;
+    els.hairline.style.width = pct + "%";
+    els.threadFill.style.height = pct + "%";
+
+    if (scrollTop < 40) {
+      els.topbar.classList.remove("hidden");
+    } else if (scrollTop > lastScrollY + 4) {
+      els.topbar.classList.add("hidden");
+    } else if (scrollTop < lastScrollY - 4) {
+      els.topbar.classList.remove("hidden");
+    }
+    lastScrollY = scrollTop;
+
+    var current = 0;
+    for (var i = 0; i < chapterEls.length; i++) {
+      var rect = chapterEls[i].getBoundingClientRect();
+      if (rect.top <= window.innerHeight * 0.4) current = i;
+    }
+    if (current !== activeChapter) {
+      activeChapter = current;
+      updateActiveChapterUI();
+    }
+
+    els.topFab.style.display = scrollTop > 400 ? "flex" : "none";
+  }
+
+  var ticking = false;
+  window.addEventListener("scroll", function () {
+    if (!ticking) {
+      ticking = true;
+      requestAnimationFrame(function () { ticking = false; onScrollFrame(); });
+    }
+  }, { passive: true });
+
+  els.menuBtn.addEventListener("click", openDrawer);
+  els.closeDrawerBtn.addEventListener("click", closeDrawer);
+  els.scrim.addEventListener("click", closeDrawer);
+  els.topBtnBar.addEventListener("click", scrollToTop);
+  els.topFab.addEventListener("click", scrollToTop);
+
+  // manifest.json is expected next to this html file; images are expected
+  // at paths relative to this html file too (as written by generate_manifest.py).
+  fetch("manifest.json")
+    .then(function (res) {
+      if (!res.ok) throw new Error("manifest.json not found (" + res.status + ")");
+      return res.json();
+    })
+    .then(function (data) {
+      chapters = data.chapters || [];
+      if (chapters.length === 0) {
+        els.statusText.textContent = "manifest.json has no chapters.";
+        els.statusText.classList.add("error");
+        return;
+      }
+      buildDrawer();
+      buildThreadRail();
+      buildReader("");
+      els.landing.style.display = "none";
+      els.topbar.classList.remove("hidden");
+      els.reader.style.display = "block";
+      updateActiveChapterUI();
+      onScrollFrame();
+    })
+    .catch(function (err) {
+      els.statusText.textContent =
+        "Couldn't load manifest.json — make sure it's in the same folder as this page. (" + err.message + ")";
+      els.statusText.classList.add("error");
+    });
+})();
+</script>
+</body>
+</html>
