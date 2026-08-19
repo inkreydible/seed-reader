@@ -5,9 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Scroll — Seed</title>
 <meta property="og:type" content="website" />
+<meta property="og:site_name" content="Scroll" />
 <meta property="og:title" content="Seed — read on Scroll" />
 <meta property="og:description" content="Said P.'s sci-fi webtoon Seed, hosted as a scrollable webtoon reader." />
 <meta property="og:image" content="https://inkreydible.github.io/cover.jpg" />
+<meta property="og:image:secure_url" content="https://inkreydible.github.io/cover.jpg" />
+<meta property="og:image:type" content="image/jpeg" />
+<meta property="og:image:width" content="540" />
+<meta property="og:image:height" content="540" />
+<meta property="og:image:alt" content="Seed cover art" />
 <meta property="og:url" content="https://inkreydible.github.io/" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="Seed — read on Scroll" />
@@ -110,6 +116,34 @@
     flex-direction: column;
     align-items: center;
     text-align: center;
+  }
+
+  .cover-frame {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    max-width: 66vw;
+    flex-shrink: 0;
+    border-radius: 16px;
+    border: 1px solid var(--accent-dim);
+    overflow: hidden;
+    background: var(--bg2);
+    margin-bottom: 22px;
+  }
+  .cover-frame .glow { inset: -60%; }
+  .cover-frame img {
+    position: relative; z-index: 1;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .cover-frame.cover-fallback { display: flex; align-items: center; justify-content: center; }
+  .cover-frame.cover-fallback::after {
+    content: "S";
+    position: relative; z-index: 1;
+    font-family: 'Anton', sans-serif;
+    font-size: 64px;
+    color: var(--accent);
   }
 
   .series-meta {
@@ -409,6 +443,11 @@
       </div>
 
       <div class="series-card">
+        <div class="cover-frame" id="coverFrame">
+          <div class="glow"></div>
+          <img id="coverImg" src="cover.jpg" alt="Seed cover art"
+               onerror="this.onerror=null; this.remove(); document.getElementById('coverFrame').classList.add('cover-fallback');" />
+        </div>
         <div class="series-meta">
           <p class="series-eyebrow">Now hosting</p>
           <h2 class="series-title display">Seed</h2>
