@@ -108,49 +108,15 @@
     width: 100%;
     display: flex;
     flex-direction: column;
-    align-items: stretch;
-    text-align: left;
+    align-items: center;
+    text-align: center;
   }
 
-  .series-top {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    width: 100%;
-    margin-bottom: 18px;
-  }
   .series-meta {
-    flex: 1;
-    min-width: 0;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-  }
-
-  .cover-frame {
-    position: relative;
-    width: 72px;
-    height: 72px;
-    flex-shrink: 0;
-    border-radius: 14px;
-    border: 1px solid var(--accent-dim);
-    overflow: hidden;
-    background: var(--bg2);
-  }
-  .cover-frame .glow { inset: -60%; }
-  .cover-frame img {
-    position: relative; z-index: 1;
-    width: 100%; height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-  .cover-frame.cover-fallback { display: flex; align-items: center; justify-content: center; }
-  .cover-frame.cover-fallback::after {
-    content: "S";
-    position: relative; z-index: 1;
-    font-family: 'Anton', sans-serif;
-    font-size: 26px;
-    color: var(--accent);
+    align-items: center;
+    margin-bottom: 18px;
   }
 
   .series-eyebrow {
@@ -158,16 +124,16 @@
     font-size: 11px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    margin-bottom: 2px;
+    margin-bottom: 6px;
   }
   .series-title {
-    font-size: 24px;
+    font-size: clamp(30px, 7vw, 44px);
     color: var(--text);
-    margin-bottom: 2px;
+    margin-bottom: 4px;
   }
   .series-author {
     color: var(--text-dim);
-    font-size: 12px;
+    font-size: 12.5px;
     margin-bottom: 0;
   }
   .series-desc {
@@ -438,17 +404,10 @@
       </div>
 
       <div class="series-card">
-        <div class="series-top">
-          <div class="cover-frame" id="coverFrame">
-            <div class="glow"></div>
-            <img id="coverImg" src="cover.jpg" alt="Seed cover art"
-                 onerror="this.onerror=null; this.remove(); document.getElementById('coverFrame').classList.add('cover-fallback');" />
-          </div>
-          <div class="series-meta">
-            <p class="series-eyebrow">Now hosting</p>
-            <h2 class="series-title display">Seed</h2>
-            <p class="series-author">by Said P. · Sci-Fi · Rated 16+</p>
-          </div>
+        <div class="series-meta">
+          <p class="series-eyebrow">Now hosting</p>
+          <h2 class="series-title display">Seed</h2>
+          <p class="series-author">by Said P. · Sci-Fi · Rated 16+</p>
         </div>
         <p class="series-desc">
           In a near-future world of quiet conveniences and constant connection, a lonely teenager named
@@ -565,6 +524,29 @@
   function encodePath(p) { return p.split("/").map(encodeURIComponent).join("/"); }
   function glowEl() { var d = document.createElement("div"); d.className = "glow"; return d; }
 
+  // ---------- image preloading ----------
+  // Start fetching each image while it's still well below the fold, so it's
+  // decoded and ready by the time you scroll to it. 2500px is roughly 2–3
+  // screen heights of lead time on a phone. Bump it up if you still see
+  // pop-in; the tradeoff is more images loading ahead of where you are.
+  var PRELOAD_MARGIN = "2500px 0px 2500px 0px";
+  var imageObserver = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (!entry.isIntersecting) return;
+      var panel = entry.target;
+      var img = panel.querySelector("img");
+      if (img && img.dataset.src) {
+        img.src = img.dataset.src;
+        delete img.dataset.src;
+      }
+      imageObserver.unobserve(panel); // once loaded, stop watching
+    });
+  }, { root: null, rootMargin: PRELOAD_MARGIN, threshold: 0 });
+
+  function resetImageObserver() {
+    imageObserver.disconnect();
+  }
+
   // ---------- screen switching ----------
   function showHero() {
     currentView = "hero";
@@ -642,6 +624,7 @@
     currentBatch = idx;
     activeLocal = 0;
     chapterEls = [];
+    resetImageObserver();
     els.reader.innerHTML = "";
 
     var batch = batches[idx];
@@ -670,17 +653,21 @@
         var panel = document.createElement("div");
         panel.className = "panel-wrap";
         var renderedH = Math.round((p.h / p.w) * 720);
-        panel.style.contentVisibility = "auto";
-        panel.style.containIntrinsicSize = "720px " + renderedH + "px";
+        // Reserve the correct height up front so nothing jumps, but do NOT
+        // use content-visibility here — it fights the preloader below by
+        // skipping offscreen work entirely. We manage loading ourselves.
+        panel.style.minHeight = renderedH + "px";
         var img = document.createElement("img");
-        img.src = encodePath(p.file);
-        img.loading = "lazy";
+        // Store the URL in data-src; the observer promotes it to src when
+        // the panel gets within PRELOAD_MARGIN of the viewport.
+        img.dataset.src = encodePath(p.file);
         img.decoding = "async";
         img.alt = "";
         img.width = p.w;
         img.height = p.h;
         panel.appendChild(img);
         wrap.appendChild(panel);
+        imageObserver.observe(panel);
       });
 
       frag.appendChild(wrap);
