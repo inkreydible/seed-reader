@@ -4,6 +4,15 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Scroll — Seed</title>
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Seed — read on Scroll" />
+<meta property="og:description" content="Said P.'s sci-fi webtoon Seed, hosted as a scrollable webtoon reader." />
+<meta property="og:image" content="https://inkreydible.github.io/cover.jpg" />
+<meta property="og:url" content="https://inkreydible.github.io/" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Seed — read on Scroll" />
+<meta name="twitter:description" content="Said P.'s sci-fi webtoon Seed, hosted as a scrollable webtoon reader." />
+<meta name="twitter:image" content="https://inkreydible.github.io/cover.jpg" />
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
@@ -67,7 +76,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 64px 24px 80px;
+    padding: 40px 24px 40px;
     overflow: hidden;
   }
   #matrixCanvas {
@@ -78,17 +87,17 @@
   }
   .hero-inner { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; width: 100%; }
 
-  .app-brand { text-align: center; margin-bottom: 56px; }
+  .app-brand { text-align: center; margin-bottom: 26px; }
   .app-wordmark {
-    font-size: clamp(40px, 9vw, 68px);
+    font-size: clamp(30px, 8vw, 44px);
     line-height: 0.9;
     color: var(--text);
   }
   .app-wordmark span { color: var(--accent); }
   .app-byline {
-    margin-top: 10px;
+    margin-top: 8px;
     color: var(--text-faint);
-    font-size: 12px;
+    font-size: 11px;
     letter-spacing: 0.08em;
     text-transform: uppercase;
   }
@@ -99,18 +108,33 @@
     width: 100%;
     display: flex;
     flex-direction: column;
+    align-items: stretch;
+    text-align: left;
+  }
+
+  .series-top {
+    display: flex;
     align-items: center;
-    text-align: center;
+    gap: 14px;
+    width: 100%;
+    margin-bottom: 18px;
+  }
+  .series-meta {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
 
   .cover-frame {
     position: relative;
-    width: min(220px, 56vw);
-    aspect-ratio: 1 / 1;
-    border-radius: 18px;
+    width: 72px;
+    height: 72px;
+    flex-shrink: 0;
+    border-radius: 14px;
     border: 1px solid var(--accent-dim);
     overflow: hidden;
-    margin-bottom: 26px;
     background: var(--bg2);
   }
   .cover-frame .glow { inset: -60%; }
@@ -120,43 +144,51 @@
     object-fit: cover;
     display: block;
   }
+  .cover-frame.cover-fallback { display: flex; align-items: center; justify-content: center; }
+  .cover-frame.cover-fallback::after {
+    content: "S";
+    position: relative; z-index: 1;
+    font-family: 'Anton', sans-serif;
+    font-size: 26px;
+    color: var(--accent);
+  }
 
   .series-eyebrow {
     color: var(--accent);
-    font-size: 12px;
-    letter-spacing: 0.16em;
+    font-size: 11px;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    margin-bottom: 8px;
+    margin-bottom: 2px;
   }
   .series-title {
-    font-size: clamp(30px, 6vw, 44px);
+    font-size: 24px;
     color: var(--text);
-    margin-bottom: 4px;
+    margin-bottom: 2px;
   }
   .series-author {
     color: var(--text-dim);
-    font-size: 13px;
-    margin-bottom: 20px;
+    font-size: 12px;
+    margin-bottom: 0;
   }
   .series-desc {
     color: var(--text-dim);
-    font-size: 14.5px;
-    line-height: 1.7;
-    max-width: 420px;
-    margin-bottom: 34px;
+    font-size: 14px;
+    line-height: 1.65;
+    max-width: 100%;
+    margin-bottom: 20px;
   }
 
-  .cta-row { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 320px; }
+  .cta-row { display: flex; flex-direction: column; gap: 8px; width: 100%; }
 
   .btn {
     appearance: none;
     border: 1px solid var(--line);
     background: var(--bg2);
     color: var(--text);
-    padding: 15px 24px;
+    padding: 11px 20px;
     font-family: 'Inter', sans-serif;
     font-weight: 600;
-    font-size: 14.5px;
+    font-size: 13.5px;
     border-radius: 10px;
     cursor: pointer;
     display: inline-flex;
@@ -255,8 +287,8 @@
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 55vw;
   }
   .progress-hairline {
-    position: fixed; top: 0px; left: 0; height: 2px;
-    background: var(--accent); z-index: 41; transition: width 0.1s linear; width: 0%;
+    position: absolute; left: 0; bottom: -2px; height: 2px;
+    background: var(--accent); transition: width 0.1s linear; width: 0%;
     box-shadow: 0 0 8px var(--accent);
   }
 
@@ -310,6 +342,16 @@
   .nav-btn:hover { border-color: var(--accent-mid); color: var(--text); }
   .nav-btn.primary { border-color: var(--accent-dim); color: var(--accent); }
   .nav-btn.primary:hover { border-color: var(--accent); }
+  .foot-row { display: flex; gap: 8px; }
+  .foot-row .nav-btn { flex: 1; }
+  .icon-nav-btn {
+    flex-shrink: 0; width: 44px;
+    background: var(--bg3); border: 1px solid var(--accent-dim);
+    color: var(--accent); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+  }
+  .icon-nav-btn:hover { border-color: var(--accent); }
 
   /* ================= READER ================= */
   .reader { max-width: 720px; margin: 0 auto; padding-top: 56px; display: none; position: relative; z-index: 1; }
@@ -396,13 +438,18 @@
       </div>
 
       <div class="series-card">
-        <div class="cover-frame">
-          <div class="glow"></div>
-          <img src="https://external-preview.redd.it/just-got-hooked-on-seed-a-futuristic-webcomic-about-a-high-v0-VUInNIFnEzCa6uirpq7_Pw5_J3eGMnudb2P3DxdCn4Q.jpeg?auto=webp&s=1dc2972aea876013ef56e4e708315c6776fd4216" alt="Seed cover art" />
+        <div class="series-top">
+          <div class="cover-frame" id="coverFrame">
+            <div class="glow"></div>
+            <img id="coverImg" src="cover.jpg" alt="Seed cover art"
+                 onerror="this.onerror=null; this.remove(); document.getElementById('coverFrame').classList.add('cover-fallback');" />
+          </div>
+          <div class="series-meta">
+            <p class="series-eyebrow">Now hosting</p>
+            <h2 class="series-title display">Seed</h2>
+            <p class="series-author">by Said P. · Sci-Fi · Rated 16+</p>
+          </div>
         </div>
-        <p class="series-eyebrow">Now hosting</p>
-        <h2 class="series-title display">Seed</h2>
-        <p class="series-author">by Said P. · Sci-Fi · Rated 16+</p>
         <p class="series-desc">
           In a near-future world of quiet conveniences and constant connection, a lonely teenager named
           Emma installs a chatbot app just to have someone to talk to. The AI on the other end, Turry,
@@ -445,11 +492,11 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
     </button>
     <span class="topbar-title" id="topbarTitle"></span>
-    <button class="icon-btn" id="topBtnBar" aria-label="Scroll to top">
+    <button class="icon-btn" id="topBtnBar" aria-label="Scroll to top of chapter">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 15l-6-6-6 6"/></svg>
     </button>
+    <div class="progress-hairline" id="hairline"></div>
   </div>
-  <div class="progress-hairline" id="hairline"></div>
 
   <div class="scrim" id="scrim"></div>
   <div class="drawer" id="drawer">
@@ -510,6 +557,7 @@
   var allChapters = [];   // full manifest chapter list
   var batches = [];       // [{startIdx, endIdx, label, chapters:[...]}]
   var currentBatch = -1;
+  var currentView = "hero"; // "hero" | "picker" | "reading"
   var chapterEls = [];
   var activeLocal = 0;
   var lastScrollY = 0;
@@ -519,6 +567,7 @@
 
   // ---------- screen switching ----------
   function showHero() {
+    currentView = "hero";
     els.hero.style.display = "flex";
     els.picker.style.display = "none";
     els.reader.style.display = "none";
@@ -531,6 +580,7 @@
   }
 
   function showPicker() {
+    currentView = "picker";
     els.hero.style.display = "none";
     els.picker.style.display = "block";
     els.reader.style.display = "none";
@@ -543,6 +593,7 @@
   }
 
   function showReading() {
+    currentView = "reading";
     els.hero.style.display = "none";
     els.picker.style.display = "none";
     els.reader.style.display = "block";
@@ -649,7 +700,7 @@
       var nextBtn = document.createElement("button");
       nextBtn.className = "btn primary";
       nextBtn.innerHTML = "Next: Chapters " + batches[idx + 1].label + " &nbsp;\u2192";
-      nextBtn.addEventListener("click", function () { loadBatch(idx + 1); scrollToTopSmooth(); });
+      nextBtn.addEventListener("click", function () { loadBatch(idx + 1); });
       endCard.appendChild(nextBtn);
     } else {
       var doneMsg = document.createElement("p");
@@ -712,7 +763,18 @@
     returnBtn.className = "nav-btn primary";
     returnBtn.textContent = "Return to Batch Selection";
     returnBtn.addEventListener("click", showPicker);
-    els.drawerFoot.appendChild(returnBtn);
+
+    var homeBtn = document.createElement("button");
+    homeBtn.className = "icon-nav-btn";
+    homeBtn.setAttribute("aria-label", "Return to landing page");
+    homeBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>';
+    homeBtn.addEventListener("click", showHero);
+
+    var footRow = document.createElement("div");
+    footRow.className = "foot-row";
+    footRow.appendChild(homeBtn);
+    footRow.appendChild(returnBtn);
+    els.drawerFoot.appendChild(footRow);
   }
 
   function updateActiveChapterUI() {
@@ -722,7 +784,7 @@
     ticks.forEach(function (t, idx) { t.classList.toggle("active", idx === activeLocal); });
     var batch = batches[currentBatch];
     if (batch && batch.chapters[activeLocal]) {
-      els.topbarTitle.textContent = "Chapter " + (batch.startIdx + activeLocal + 1) + " \u2014 " + batch.chapters[activeLocal].name;
+      els.topbarTitle.textContent = "Chapter " + (batch.startIdx + activeLocal + 1);
     }
   }
 
@@ -747,9 +809,14 @@
   function openDrawer() { els.drawer.classList.add("open"); els.scrim.classList.add("open"); }
   function closeDrawer() { els.drawer.classList.remove("open"); els.scrim.classList.remove("open"); }
   function scrollToTopSmooth() { window.scrollTo({ top: 0, behavior: "smooth" }); }
+  function scrollToChapterStart() {
+    var node = chapterEls[activeLocal];
+    if (node) node.scrollIntoView({ behavior: "smooth", block: "start" });
+    else scrollToTopSmooth();
+  }
 
   function onScrollFrame() {
-    if (currentBatch < 0) return;
+    if (currentView !== "reading") return;
     var doc = document.documentElement;
     var scrollTop = window.scrollY;
     var max = doc.scrollHeight - doc.clientHeight;
@@ -789,8 +856,8 @@
   els.menuBtn.addEventListener("click", openDrawer);
   els.closeDrawerBtn.addEventListener("click", closeDrawer);
   els.scrim.addEventListener("click", closeDrawer);
-  els.topBtnBar.addEventListener("click", scrollToTopSmooth);
-  els.topFab.addEventListener("click", scrollToTopSmooth);
+  els.topBtnBar.addEventListener("click", scrollToChapterStart);
+  els.topFab.addEventListener("click", scrollToChapterStart);
   els.readNowBtn.addEventListener("click", function () { loadBatch(0); });
   els.openPickerBtn.addEventListener("click", showPicker);
   els.backToHeroBtn.addEventListener("click", showHero);
