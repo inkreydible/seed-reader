@@ -342,8 +342,13 @@
   }
   .chapter-card .rule-sm { position: relative; z-index: 1; width: 40px; height: 2px; background: var(--accent); margin: 18px auto 0; border-radius: 2px; box-shadow: 0 0 8px var(--accent-mid); }
 
+  .panel-wrap {
+    width: 100%;
+    background: var(--bg3);
+  }
   .panel-wrap img {
-    display: block; width: 100%; height: auto;
+    display: block; width: 100%; height: 100%;
+    object-fit: cover;
     background: var(--bg3);
   }
 
@@ -652,11 +657,11 @@
       c.pages.forEach(function (p) {
         var panel = document.createElement("div");
         panel.className = "panel-wrap";
-        var renderedH = Math.round((p.h / p.w) * 720);
-        // Reserve the correct height up front so nothing jumps, but do NOT
-        // use content-visibility here — it fights the preloader below by
-        // skipping offscreen work entirely. We manage loading ourselves.
-        panel.style.minHeight = renderedH + "px";
+        // Reserve space using the image's aspect ratio, NOT a fixed pixel
+        // height — the panel scales to whatever width the column actually is
+        // (720px on desktop, ~390px on a phone), so the reserved space always
+        // matches the rendered image and there's no gap on narrow screens.
+        panel.style.aspectRatio = p.w + " / " + p.h;
         var img = document.createElement("img");
         // Store the URL in data-src; the observer promotes it to src when
         // the panel gets within PRELOAD_MARGIN of the viewport.
