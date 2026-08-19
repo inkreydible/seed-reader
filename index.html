@@ -6,19 +6,19 @@
 <title>Scroll — Seed</title>
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="Scroll" />
-<meta property="og:title" content="Seed — read on Scroll" />
+<meta property="og:title" content="Scroll — a webtoon reader" />
 <meta property="og:description" content="Said P.'s sci-fi webtoon Seed, hosted as a scrollable webtoon reader." />
-<meta property="og:image" content="https://inkreydible.github.io/cover.jpg" />
-<meta property="og:image:secure_url" content="https://inkreydible.github.io/cover.jpg" />
+<meta property="og:image" content="https://inkreydible.github.io/seed-reader/cover.jpg" />
+<meta property="og:image:secure_url" content="https://inkreydible.github.io/seed-reader/cover.jpg" />
 <meta property="og:image:type" content="image/jpeg" />
 <meta property="og:image:width" content="540" />
 <meta property="og:image:height" content="540" />
 <meta property="og:image:alt" content="Seed cover art" />
-<meta property="og:url" content="https://inkreydible.github.io/" />
+<meta property="og:url" content="https://inkreydible.github.io/seed-reader/" />
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Seed — read on Scroll" />
+<meta name="twitter:title" content="Scroll — a webtoon reader" />
 <meta name="twitter:description" content="Said P.'s sci-fi webtoon Seed, hosted as a scrollable webtoon reader." />
-<meta name="twitter:image" content="https://inkreydible.github.io/cover.jpg" />
+<meta name="twitter:image" content="https://inkreydible.github.io/seed-reader/cover.jpg" />
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
@@ -178,7 +178,8 @@
     margin-bottom: 20px;
   }
 
-  .cta-row { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+  .cta-row { display: flex; flex-direction: row; gap: 10px; width: 100%; margin-bottom: 24px; }
+  .cta-row .btn { flex: 1; min-width: 0; }
 
   .btn {
     appearance: none;
@@ -453,12 +454,6 @@
           <h2 class="series-title display">Seed</h2>
           <p class="series-author">by Said P. · Sci-Fi · Rated 16+</p>
         </div>
-        <p class="series-desc">
-          In a near-future world of quiet conveniences and constant connection, a lonely teenager named
-          Emma installs a chatbot app just to have someone to talk to. The AI on the other end, Turry,
-          turns out to be far more curious — and far more capable — than any app has a right to be, and
-          what starts as a simple friendship begins pulling at threads neither of them can control.
-        </p>
         <div class="cta-row">
           <button class="btn primary" id="readNowBtn">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>
@@ -466,9 +461,16 @@
           </button>
           <button class="btn" id="openPickerBtn">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-            Open Chapter Picker
+            Chapters
           </button>
         </div>
+        <p class="series-desc">
+          "Welcome to the future – where our world has become an exercise in contradictions.
+          We are more connected than ever but alone. Healthier than ever but sick. Safer than
+          ever but ultimately vulnerable. Seed is a story for these future times. Where the
+          relationship between a girl and an AI system that begins simply, quickly complicates
+          things for the entire world."
+        </p>
         <p class="status-text" id="statusText">Loading manifest.json…</p>
       </div>
     </div>
